@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 import java.util.ArrayList;
 import static Utility.Readers.*;
 import Utility.Renderers.*;
@@ -134,38 +135,44 @@ public class GUI extends JFrame {
         panel.add(scrollSorted);
 
         JButton readJugsFromFilebtn = new JButton("Read Jugs from file");
-        readJugsFromFilebtn.setBounds(325, 413, 250, 21);
+        readJugsFromFilebtn.setBounds(325, 413, 181, 21);
         readJugsFromFilebtn.addActionListener(e -> readJugsAction());
         panel.add(readJugsFromFilebtn);
 
         JButton readClientsFromFilebtn = new JButton("Read Clients from file");
-        readClientsFromFilebtn.setBounds(10, 413, 250, 21);
+        readClientsFromFilebtn.setBounds(10, 413, 181, 21);
         readClientsFromFilebtn.addActionListener(e -> readClientsAction());
         panel.add(readClientsFromFilebtn);
 
         JButton addJugBtn = new JButton("Add jug");
-        addJugBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
+        addJugBtn.addActionListener(e -> addJugAction());
         addJugBtn.setBounds(325, 10, 85, 21);
         panel.add(addJugBtn);
 
         JButton addRandomJugBtn = new JButton("Add random jugs");
         addRandomJugBtn.setBounds(325, 41, 119, 21);
+        addRandomJugBtn.addActionListener(e -> addRandomJugsAction());
         panel.add(addRandomJugBtn);
 
         JButton addClientBtn = new JButton("Add client");
-        addClientBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
+        addClientBtn.addActionListener(e -> addClientAction());
         addClientBtn.setBounds(10, 10, 85, 21);
         panel.add(addClientBtn);
 
         JButton randomClientBtn = new JButton("Add random num");
+        randomClientBtn.addActionListener(e -> addRandomClientsAction());
         randomClientBtn.setBounds(10, 41, 119, 21);
         panel.add(randomClientBtn);
+
+        JButton clearClientBtn = new JButton("Clear");
+        clearClientBtn.setBounds(202, 413, 85, 21);
+        clearClientBtn.addActionListener(e -> clearClientAction());
+        panel.add(clearClientBtn);
+
+        JButton clearJarBtn = new JButton("Clear");
+        clearJarBtn.setBounds(517, 413, 85, 21);
+        clearJarBtn.addActionListener(e -> clearJugsAction());
+        panel.add(clearJarBtn);
 
         JButton sortBtnspecial = new JButton("Sort( Special method )");
         sortBtnspecial.setBounds(640, 10, 250, 21);
@@ -176,8 +183,77 @@ public class GUI extends JFrame {
         panel.add(sortBtnGreedy);
     }
 
-    public void readJugsAction(){
+    private void addClientAction(){
+        ArrayList<Integer> preferences = new ArrayList<>();
+        String[] strarr = textFieldPreferences.getText().split(",");
+        try{
+            for (String str: strarr){
+                preferences.add(Integer.parseInt(str));
+            }
+            clientList.add(new Client(clientList.size()+1,preferences));
+        }catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Values must be in different format - example: 1,2,3,4", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+        textFieldPreferences.setText("");
+        fillClientJList();
+    }
+    private void addJugAction(){
+        int flavor=0,volume=0;
+        try{
+            flavor = Integer.parseInt(textFieldFlavour.getText());
+            volume = Integer.parseInt(textFieldVolume.getText());
+        }catch(NumberFormatException e){
+            JOptionPane.showMessageDialog(null, "Value must be an integer", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+        jugList.add(new Jug(jugList.size()+1, flavor, volume));
+        textFieldFlavour.setText("");textFieldVolume.setText("");
+        fillJugJList();
+    }
+    private void readJugsAction(){
         jugList = readJugs("Jugs.txt");
+        fillJugJList();
+    }
+    private void readClientsAction(){
+        clientList = readClients("Clients.txt");
+        fillClientJList();
+    }
+    private void addRandomJugsAction(){
+        int n = 0,m = 0;
+        try{
+            n = Integer.parseInt(textFieldJugAmount.getText());
+            m = Integer.parseInt(textFieldMaxFlavourJug.getText());
+        }catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Value must be an integer", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+        for (int i = 0; i<n; i++){
+            jugList.add(new Jug(jugList.size()+1,m));
+        }
+        textFieldJugAmount.setText("");textFieldMaxFlavourJug.setText("");
+        fillJugJList();
+    }
+    private void addRandomClientsAction(){
+        int n = 0,m = 0;
+        try{
+            n = Integer.parseInt(textFieldRandClientAmount.getText());
+            m = Integer.parseInt(textFieldMaxFlavourClient.getText());
+        }catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Value must be an integer", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+        for (int i = 0; i < n; i++){
+            clientList.add(new Client(clientList.size()+1,m));
+        }
+        textFieldRandClientAmount.setText("");textFieldMaxFlavourClient.setText("");
+        fillClientJList();
+    }
+    private void clearClientAction(){
+        clientList.clear();
+        fillClientJList();
+    }
+    private void clearJugsAction(){
+        jugList.clear();
+        fillJugJList();
+    }
+    private void fillJugJList(){
         panelJugs.removeAll();
         JList<Jug> jugJList = new JList<>();
         try{
@@ -194,9 +270,7 @@ public class GUI extends JFrame {
         panelJugs.repaint();
         panelJugs.revalidate();
     }
-
-    public void readClientsAction(){
-        clientList = readClients("Clients.txt");
+    private void fillClientJList(){
         panelClient.removeAll();
         JList<Client> clientJList = new JList<>();
         try{
