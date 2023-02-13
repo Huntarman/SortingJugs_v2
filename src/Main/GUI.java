@@ -4,7 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.util.ArrayList;
+import static Utility.Readers.*;
+import Utility.Renderers.*;
 public class GUI extends JFrame {
     private JTextField textFieldPreferences;
     private JTextField textFieldRandClientAmount;
@@ -13,7 +15,11 @@ public class GUI extends JFrame {
     private JTextField textFieldVolume;
     private JTextField textFieldMaxFlavourJug;
     private JTextField textFieldMaxFlavourClient;
-
+    private JPanel panelClient = new JPanel();
+    private JPanel panelJugs = new JPanel();
+    private JPanel panelSorted = new JPanel();
+    private ArrayList<Jug> jugList = new ArrayList<>();
+    private ArrayList<Client> clientList = new ArrayList<>();
     public GUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 914, 481);
@@ -28,28 +34,17 @@ public class GUI extends JFrame {
         getContentPane().add(panel);
         panel.setLayout(null);
 
-        JList listClient = new JList();
-        listClient.setBackground(new Color(255, 255, 255));
-        listClient.setBounds(10, 80, 250, 320);
-        panel.add(listClient);
+        panelClient.setBackground(new Color(255, 255, 255));
+        panelClient.setBounds(10, 80, 250, 320);
+        panel.add(panelClient);
 
-        JList listJugs = new JList();
-        listJugs.setBackground(new Color(255, 255, 255));
-        listJugs.setBounds(325, 80, 250, 320);
-        panel.add(listJugs);
+        panelJugs.setBackground(new Color(255, 255, 255));
+        panelJugs.setBounds(325, 80, 250, 320);
+        panel.add(panelJugs);
 
-        JList listSorted = new JList();
-        listSorted.setBackground(new Color(255, 255, 255));
-        listSorted.setBounds(640, 80, 250, 354);
-        panel.add(listSorted);
-
-        JButton sortBtnspecial = new JButton("Sort( Special method )");
-        sortBtnspecial.setBounds(640, 10, 250, 21);
-        panel.add(sortBtnspecial);
-
-        JButton sortBtnGreedy = new JButton("Sort( Greedy algorithm)");
-        sortBtnGreedy.setBounds(640, 41, 250, 21);
-        panel.add(sortBtnGreedy);
+        panelSorted.setBackground(new Color(255, 255, 255));
+        panelSorted.setBounds(640, 80, 250, 354);
+        panel.add(panelSorted);
 
         JLabel lblClientList = new JLabel("Client list:");
         lblClientList.setBounds(10, 67, 119, 13);
@@ -63,14 +58,6 @@ public class GUI extends JFrame {
         lblSortedList.setBounds(639, 67, 251, 13);
         panel.add(lblSortedList);
 
-        JButton addClientBtn = new JButton("Add client");
-        addClientBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-        addClientBtn.setBounds(10, 10, 85, 21);
-        panel.add(addClientBtn);
-
         JLabel lblPreferences = new JLabel("Preferences:");
         lblPreferences.setBounds(105, 0, 155, 13);
         panel.add(lblPreferences);
@@ -80,10 +67,6 @@ public class GUI extends JFrame {
         panel.add(textFieldPreferences);
         textFieldPreferences.setColumns(10);
 
-        JButton randomClientBtn = new JButton("Add random num");
-        randomClientBtn.setBounds(10, 41, 119, 21);
-        panel.add(randomClientBtn);
-
         textFieldRandClientAmount = new JTextField();
         textFieldRandClientAmount.setBounds(139, 42, 45, 19);
         panel.add(textFieldRandClientAmount);
@@ -92,18 +75,6 @@ public class GUI extends JFrame {
         JLabel lblAmountClients = new JLabel("Amount:");
         lblAmountClients.setBounds(139, 30, 52, 13);
         panel.add(lblAmountClients);
-
-        JButton addJugBtn = new JButton("Add jug");
-        addJugBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-        addJugBtn.setBounds(325, 10, 85, 21);
-        panel.add(addJugBtn);
-
-        JButton addRandomJugBtn = new JButton("Add random jugs");
-        addRandomJugBtn.setBounds(325, 41, 119, 21);
-        panel.add(addRandomJugBtn);
 
         textFieldJugAmount = new JTextField();
         textFieldJugAmount.setBounds(454, 42, 65, 19);
@@ -164,10 +135,82 @@ public class GUI extends JFrame {
 
         JButton readJugsFromFilebtn = new JButton("Read Jugs from file");
         readJugsFromFilebtn.setBounds(325, 413, 250, 21);
+        readJugsFromFilebtn.addActionListener(e -> readJugsAction());
         panel.add(readJugsFromFilebtn);
 
         JButton readClientsFromFilebtn = new JButton("Read Clients from file");
         readClientsFromFilebtn.setBounds(10, 413, 250, 21);
+        readClientsFromFilebtn.addActionListener(e -> readClientsAction());
         panel.add(readClientsFromFilebtn);
+
+        JButton addJugBtn = new JButton("Add jug");
+        addJugBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        addJugBtn.setBounds(325, 10, 85, 21);
+        panel.add(addJugBtn);
+
+        JButton addRandomJugBtn = new JButton("Add random jugs");
+        addRandomJugBtn.setBounds(325, 41, 119, 21);
+        panel.add(addRandomJugBtn);
+
+        JButton addClientBtn = new JButton("Add client");
+        addClientBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        addClientBtn.setBounds(10, 10, 85, 21);
+        panel.add(addClientBtn);
+
+        JButton randomClientBtn = new JButton("Add random num");
+        randomClientBtn.setBounds(10, 41, 119, 21);
+        panel.add(randomClientBtn);
+
+        JButton sortBtnspecial = new JButton("Sort( Special method )");
+        sortBtnspecial.setBounds(640, 10, 250, 21);
+        panel.add(sortBtnspecial);
+
+        JButton sortBtnGreedy = new JButton("Sort( Greedy algorithm)");
+        sortBtnGreedy.setBounds(640, 41, 250, 21);
+        panel.add(sortBtnGreedy);
+    }
+
+    public void readJugsAction(){
+        jugList = readJugs("Jugs.txt");
+        panelJugs.removeAll();
+        JList<Jug> jugJList = new JList<>();
+        try{
+            jugJList = new JList<>(jugList.toArray(new Jug[0]));
+            jugJList.setSelectionMode(JList.HORIZONTAL_WRAP);
+            jugJList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            jugJList.setVisibleRowCount(-1);
+            jugJList.setLayoutOrientation(JList.VERTICAL);
+            jugJList.setCellRenderer(new renderJugs());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        panelJugs.add(jugJList);
+        panelJugs.repaint();
+        panelJugs.revalidate();
+    }
+
+    public void readClientsAction(){
+        clientList = readClients("Clients.txt");
+        panelClient.removeAll();
+        JList<Client> clientJList = new JList<>();
+        try{
+            clientJList = new JList<>(clientList.toArray(new Client[0]));
+            clientJList.setSelectionMode(JList.HORIZONTAL_WRAP);
+            clientJList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            clientJList.setVisibleRowCount(-1);
+            clientJList.setLayoutOrientation(JList.VERTICAL);
+            clientJList.setCellRenderer(new renderClient());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        panelClient.add(clientJList);
+        panelClient.repaint();
+        panelClient.revalidate();
     }
 }

@@ -55,9 +55,9 @@ public class Client {
     }
 
     public String clientToString (){
-        String str = this.id + "||";
+        String str = "ID: " + this.id + "| Preferences: ";
         for (int flavour : preferences){
-            str = str + flavour + "||";
+            str = str + flavour + ", ";
         }
         return str;
     }
