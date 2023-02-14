@@ -1,15 +1,15 @@
 package Main;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 
 public class Client {
     private int id;
     private ArrayList<Integer> preferences = new ArrayList<>();
     private int satisfaction;
     private int dissatisfaction;
+    private int importance;
+    private boolean[] drankFlavour;
+    private HashMap<Integer,Integer> portions = new HashMap<>();
     //for reading client from file, or adding jug mannualy in GUI
     public Client(int ID, ArrayList<Integer> PREFERENCES){
         this.id = ID;
@@ -37,28 +37,60 @@ public class Client {
     public int getId() {
         return id;
     }
-
     public ArrayList<Integer> getPreferences() {
         return preferences;
     }
-
     public int getPreference(int num) {
         return this.preferences.get(num);
     }
-
     public int getSatisfaction() {
         return satisfaction;
     }
-
     public int getDissatisfaction() {
         return dissatisfaction;
     }
 
+    public void setImportance(int flavour, int flavourMax) {
+        if (prefersFlavour(flavour) && !drankFlavour[flavour-1]){
+            this.importance = preferences.size() - preferences.indexOf(flavour);
+            if (preferences.indexOf(flavour) == 0){
+                this.importance += flavourMax+1;
+            }
+        }else{
+            this.importance = 0;
+        }
+    }
+    public int getImportance() {
+        return importance;
+    }
     public String clientToString (){
         String str = "ID: " + this.id + "| Preferences: ";
         for (int flavour : preferences){
             str = str + flavour + ", ";
         }
         return str;
+    }
+    public boolean prefersFlavour(int flavour){
+        return preferences.contains(flavour);
+    }
+    public int maxPreferedFlavour(){
+        int max = 0;
+        for (int flavour: preferences) {
+            max = Integer.max(max,flavour);
+        }
+        return max;
+    }
+    public void createDrankFlavour(int MAX_FLAVOUR){
+        this.drankFlavour = new boolean[MAX_FLAVOUR];
+    }
+    public void givePortion(int id, int flavour, int volume){
+        this.portions.put(id,volume);
+        if (prefersFlavour(flavour)) {
+            this.satisfaction += volume * (preferences.size() - preferences.indexOf(flavour));
+            if (preferences.indexOf(flavour) == 0) {
+                this.dissatisfaction -= volume;
+            }
+            this.drankFlavour[flavour - 1] = true;
+        }
     }
 }

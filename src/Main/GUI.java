@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import static Utility.Readers.*;
 import Utility.Renderers.*;
 public class GUI extends JFrame {
@@ -16,19 +19,17 @@ public class GUI extends JFrame {
     private JTextField textFieldVolume;
     private JTextField textFieldMaxFlavourJug;
     private JTextField textFieldMaxFlavourClient;
+
     private JPanel panelClient = new JPanel();
     private JPanel panelJugs = new JPanel();
     private JPanel panelSorted = new JPanel();
     private ArrayList<Jug> jugList = new ArrayList<>();
     private ArrayList<Client> clientList = new ArrayList<>();
+    private int MAX_FLAVOUR;
     public GUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 914, 481);
         getContentPane().setLayout(null);
-        getContentPane().setLayout(null);
-        getContentPane().setLayout(null);
-        getContentPane().setLayout(null);
-        getContentPane().setLayout(new GridLayout(1, 0, 0, 0));
 
         JPanel panel = new JPanel();
         panel.setBounds(0, 0, 886, 434);
@@ -36,15 +37,15 @@ public class GUI extends JFrame {
         panel.setLayout(null);
 
         panelClient.setBackground(new Color(255, 255, 255));
-        panelClient.setBounds(10, 80, 250, 320);
+        panelClient.setBounds(10, 80, 280, 320);
         panel.add(panelClient);
 
         panelJugs.setBackground(new Color(255, 255, 255));
-        panelJugs.setBounds(325, 80, 250, 320);
+        panelJugs.setBounds(325, 80, 280, 320);
         panel.add(panelJugs);
 
         panelSorted.setBackground(new Color(255, 255, 255));
-        panelSorted.setBounds(640, 80, 250, 354);
+        panelSorted.setBounds(620, 80, 280, 354);
         panel.add(panelSorted);
 
         JLabel lblClientList = new JLabel("Client list:");
@@ -122,18 +123,6 @@ public class GUI extends JFrame {
         lblVolume.setBounds(474, 0, 45, 13);
         panel.add(lblVolume);
 
-        JScrollBar scrollClient = new JScrollBar();
-        scrollClient.setBounds(270, 80, 17, 320);
-        panel.add(scrollClient);
-
-        JScrollBar scrollJug = new JScrollBar();
-        scrollJug.setBounds(585, 80, 17, 320);
-        panel.add(scrollJug);
-
-        JScrollBar scrollSorted = new JScrollBar();
-        scrollSorted.setBounds(612, 80, 17, 354);
-        panel.add(scrollSorted);
-
         JButton readJugsFromFilebtn = new JButton("Read Jugs from file");
         readJugsFromFilebtn.setBounds(325, 413, 181, 21);
         readJugsFromFilebtn.addActionListener(e -> readJugsAction());
@@ -176,11 +165,32 @@ public class GUI extends JFrame {
 
         JButton sortBtnspecial = new JButton("Sort( Special method )");
         sortBtnspecial.setBounds(640, 10, 250, 21);
+        sortBtnspecial.addActionListener(e -> sortSpecialAction());
         panel.add(sortBtnspecial);
 
         JButton sortBtnGreedy = new JButton("Sort( Greedy algorithm)");
         sortBtnGreedy.setBounds(640, 41, 250, 21);
         panel.add(sortBtnGreedy);
+    }
+    private void sortSpecialAction(){
+        ArrayList<Jug> jugListSorted = jugList;
+        jugListSorted.sort(Comparator.comparing(Jug::getVolume));
+        Collections.reverse(jugListSorted);
+        setMAX_FLAVOUR();
+        ArrayList<Client> clientListSorted = new ArrayList<>();
+        for (Jug jug : jugListSorted){
+
+            for (Client client: clientList){
+                client.setImportance(jug.getFlavour(),MAX_FLAVOUR);
+                client.createDrankFlavour(MAX_FLAVOUR);
+            }
+            clientListSorted = clientList;
+            clientListSorted.sort(Comparator.comparing(Client::getImportance));
+            Collections.reverse(clientListSorted);
+            for(Client client : clientListSorted){
+
+            }
+        }
     }
 
     private void addClientAction(){
@@ -286,5 +296,9 @@ public class GUI extends JFrame {
         panelClient.add(clientJList);
         panelClient.repaint();
         panelClient.revalidate();
+    }
+    private void setMAX_FLAVOUR(){
+        for (Jug jug: jugList) MAX_FLAVOUR = Integer.max(MAX_FLAVOUR, jug.getFlavour());
+        for (Client client: clientList) MAX_FLAVOUR = Integer.max(MAX_FLAVOUR, client.maxPreferedFlavour());
     }
 }
