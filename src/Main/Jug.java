@@ -32,4 +32,8 @@ public class Jug {
     public int getVolume() {
         return this.volume;
     }
+
+    public void reduceVolume (int portionVolume) {
+        this.volume -= portionVolume;
+    }
 }

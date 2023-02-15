@@ -26,4 +26,12 @@ public class Renderers {
             return this;
         }
     }
+    public static class renderSorted extends JLabel implements ListCellRenderer<Client>{
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends Client> list, Client value, int index, boolean isSelected, boolean cellHasFocus) {
+            setText(value.portionsToString());
+            return this;
+        }
+    }
 }

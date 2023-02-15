@@ -2,9 +2,6 @@ package Main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -172,25 +169,44 @@ public class GUI extends JFrame {
         sortBtnGreedy.setBounds(640, 41, 250, 21);
         panel.add(sortBtnGreedy);
     }
-    private void sortSpecialAction(){
-        ArrayList<Jug> jugListSorted = jugList;
+    public void sortSpecialAction(){
+        ArrayList<Jug> jugListSorted = new ArrayList<>(jugList);
         jugListSorted.sort(Comparator.comparing(Jug::getVolume));
         Collections.reverse(jugListSorted);
         setMAX_FLAVOUR();
-        ArrayList<Client> clientListSorted = new ArrayList<>();
+        ArrayList<Client> clientListSorted = new ArrayList<>(clientList);
+        int[] jugsPerFlavour = new int[MAX_FLAVOUR];
+        for(Jug jug : jugList){
+            jugsPerFlavour[jug.getFlavour()-1]++;
+        }
+        for (Client client : clientListSorted){
+            client.createDrankFlavour(MAX_FLAVOUR);
+        }
         for (Jug jug : jugListSorted){
-
-            for (Client client: clientList){
+            int importantClients=0;
+            for (Client client: clientListSorted){
                 client.setImportance(jug.getFlavour(),MAX_FLAVOUR);
-                client.createDrankFlavour(MAX_FLAVOUR);
+                if (client.getImportance()>0){
+                    importantClients++;
+                }
             }
-            clientListSorted = clientList;
+
             clientListSorted.sort(Comparator.comparing(Client::getImportance));
             Collections.reverse(clientListSorted);
-            for(Client client : clientListSorted){
+            int m = importantClients/jugsPerFlavour[jug.getFlavour()-1];
 
+            int i=0;
+            while (m!=0 && jug.getVolume()!=0){
+                int portion = Math.round(jug.getVolume()/m);
+                clientList.get(clientListSorted.get(i).getId()-1)
+                        .givePortion(jug.getId(), jug.getFlavour(), portion);
+                jug.reduceVolume(portion);
+                m--;i++;
             }
+            jugsPerFlavour[jug.getFlavour()-1]--;
         }
+        fillJugJList();
+        fillSortedJList();
     }
 
     private void addClientAction(){
@@ -296,6 +312,23 @@ public class GUI extends JFrame {
         panelClient.add(clientJList);
         panelClient.repaint();
         panelClient.revalidate();
+    }
+    private void fillSortedJList(){
+        panelSorted.removeAll();
+        JList<Client> sortedJList = new JList<>();
+        try{
+            sortedJList = new JList<>(clientList.toArray(new Client[0]));
+            sortedJList.setSelectionMode(JList.HORIZONTAL_WRAP);
+            sortedJList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            sortedJList.setVisibleRowCount(-1);
+            sortedJList.setLayoutOrientation(JList.VERTICAL);
+            sortedJList.setCellRenderer(new renderSorted());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        panelSorted.add(sortedJList);
+        panelSorted.repaint();
+        panelSorted.revalidate();
     }
     private void setMAX_FLAVOUR(){
         for (Jug jug: jugList) MAX_FLAVOUR = Integer.max(MAX_FLAVOUR, jug.getFlavour());

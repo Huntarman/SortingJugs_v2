@@ -65,11 +65,16 @@ public class Client {
     }
     public String clientToString (){
         String str = "ID: " + this.id + "| Preferences: ";
-        for (int flavour : preferences){
-            str = str + flavour + ", ";
+        for (int a : preferences){
+            str += a + ", ";
         }
         return str;
     }
+    public String portionsToString(){
+        String str = "ID: " + this.id + "| Portions: " + portions.toString();
+        return str;
+    }
+
     public boolean prefersFlavour(int flavour){
         return preferences.contains(flavour);
     }
@@ -92,5 +97,12 @@ public class Client {
             }
             this.drankFlavour[flavour - 1] = true;
         }
+    }
+    public void getdrankFlavour(){
+        String str = "";
+        for (boolean bool : drankFlavour){
+            str += bool + "|";
+        }
+        System.out.println(str);
     }
 }
