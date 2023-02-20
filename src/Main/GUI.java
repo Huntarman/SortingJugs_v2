@@ -2,9 +2,7 @@ package Main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 import static Utility.Readers.*;
 import Utility.Renderers.*;
@@ -16,7 +14,8 @@ public class GUI extends JFrame {
     private JTextField textFieldVolume;
     private JTextField textFieldMaxFlavourJug;
     private JTextField textFieldMaxFlavourClient;
-
+    JLabel lblTotalSat = new JLabel("Total satisfaction: ");
+    JLabel lblTotalDisSat = new JLabel("Total dissatisfaction: ");
     private JPanel panelClient = new JPanel();
     private JPanel panelJugs = new JPanel();
     private JPanel panelSorted = new JPanel();
@@ -25,11 +24,11 @@ public class GUI extends JFrame {
     private int MAX_FLAVOUR;
     public GUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 914, 481);
+        setBounds(100, 100, 1200, 471);
         getContentPane().setLayout(null);
 
         JPanel panel = new JPanel();
-        panel.setBounds(0, 0, 886, 434);
+        panel.setBounds(0, 0, 1186, 434);
         getContentPane().add(panel);
         panel.setLayout(null);
 
@@ -42,7 +41,7 @@ public class GUI extends JFrame {
         panel.add(panelJugs);
 
         panelSorted.setBackground(new Color(255, 255, 255));
-        panelSorted.setBounds(620, 80, 280, 354);
+        panelSorted.setBounds(640, 80, 536, 310);
         panel.add(panelSorted);
 
         JLabel lblClientList = new JLabel("Client list:");
@@ -120,6 +119,12 @@ public class GUI extends JFrame {
         lblVolume.setBounds(474, 0, 45, 13);
         panel.add(lblVolume);
 
+        lblTotalSat.setBounds(640, 398, 250, 13);
+        panel.add(lblTotalSat);
+
+        lblTotalDisSat.setBounds(640, 421, 250, 13);
+        panel.add(lblTotalDisSat);
+
         JButton readJugsFromFilebtn = new JButton("Read Jugs from file");
         readJugsFromFilebtn.setBounds(325, 413, 181, 21);
         readJugsFromFilebtn.addActionListener(e -> readJugsAction());
@@ -167,6 +172,7 @@ public class GUI extends JFrame {
 
         JButton sortBtnGreedy = new JButton("Sort( Greedy algorithm)");
         sortBtnGreedy.setBounds(640, 41, 250, 21);
+        sortBtnGreedy.addActionListener(e -> sortGreedyAction());
         panel.add(sortBtnGreedy);
     }
     public void sortSpecialAction(){
@@ -175,6 +181,8 @@ public class GUI extends JFrame {
         Collections.reverse(jugListSorted);
         setMAX_FLAVOUR();
         ArrayList<Client> clientListSorted = new ArrayList<>(clientList);
+        ArrayList<Client> clientCopy = new ArrayList<>(clientList);
+        ArrayList<Jug> jugCopy = new ArrayList<>(jugList);
         int[] jugsPerFlavour = new int[MAX_FLAVOUR];
         for(Jug jug : jugList){
             jugsPerFlavour[jug.getFlavour()-1]++;
@@ -205,10 +213,68 @@ public class GUI extends JFrame {
             }
             jugsPerFlavour[jug.getFlavour()-1]--;
         }
-        fillJugJList();
+        int totSat = 0, totDisSat=0;
+        for (Client client: clientListSorted){
+            totSat += client.getSatisfaction();
+            totDisSat += client.getDissatisfaction();
+        }
+        lblTotalSat.setText("Total satisfaction: " + totSat);
+        lblTotalDisSat.setText("Total dissatisfaction: " + totDisSat);
         fillSortedJList();
+        clientList = clientCopy;
+        jugList = jugCopy;
     }
-
+    private void sortGreedyAction() throws NumberFormatException{
+        HashMap<Integer,ArrayList<Client>> set = new HashMap<>();
+        ArrayList<Integer> keys = new ArrayList<>();
+        setMAX_FLAVOUR();
+        ArrayList<Client>  setValuelist;
+        ArrayList<Client> clientCopy = new ArrayList<>(clientList);
+        ArrayList<Jug> jugCopy;
+        for (int i = 0; i<1000 ; i++){
+            setValuelist = new ArrayList<>(clientList);
+            jugCopy = new ArrayList<>(jugList);
+            for (Client client: setValuelist){
+                client.createDrankFlavour(MAX_FLAVOUR);
+            }
+            for (Jug jug: jugCopy) {
+                for (Client client: setValuelist){
+                    client.setImportance(jug.getFlavour(),MAX_FLAVOUR);
+                }
+                setValuelist.sort(Comparator.comparing(Client::getImportance));
+                Collections.reverse(setValuelist);
+                int j=0;
+                while (jug.getVolume() != 0){
+                    if (setValuelist.get(j).getImportance()>0){
+                        Random rand = new Random();
+                        int portion = rand.nextInt(jug.getVolume())+1;
+                        setValuelist.get(j).givePortion(jug.getId(), jug.getFlavour(), portion);
+                        jug.reduceVolume(portion);
+                    }
+                    j++;
+                    if (j==clientList.size()){
+                        setValuelist.get(0).givePortion(jug.getId(), jug.getFlavour(), jug.getVolume());
+                        jug.reduceVolume(jug.getVolume());
+                    }
+                }
+            }
+            int totSat = 0;
+            for (Client client: setValuelist) {
+                totSat += client.getSatisfaction();
+            }
+            keys.add(totSat);
+            set.put(totSat,setValuelist);
+        }
+        Collections.sort(keys);Collections.reverse(keys);
+        clientList = set.get(keys.get(0));
+        clientList.sort(Comparator.comparing(Client::getId));
+        int totDisSat = 0;
+        for (Client client: clientList) totDisSat += client.getDissatisfaction();
+        lblTotalSat.setText("Total satisfaction: " + keys.get(0));
+        lblTotalDisSat.setText("Total dissatisfaction: " + totDisSat);
+        fillSortedJList();
+        clientList = clientCopy;
+    }
     private void addClientAction(){
         ArrayList<Integer> preferences = new ArrayList<>();
         String[] strarr = textFieldPreferences.getText().split(",");

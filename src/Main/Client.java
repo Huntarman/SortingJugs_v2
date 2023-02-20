@@ -51,7 +51,7 @@ public class Client {
     }
 
     public void setImportance(int flavour, int flavourMax) {
-        if (prefersFlavour(flavour) && !drankFlavour[flavour-1]){
+        if (prefersFlavour(flavour) && !drankFlavour[flavour - 1]){
             this.importance = preferences.size() - preferences.indexOf(flavour);
             if (preferences.indexOf(flavour) == 0){
                 this.importance += flavourMax+1;
@@ -93,7 +93,7 @@ public class Client {
         if (prefersFlavour(flavour)) {
             this.satisfaction += volume * (preferences.size() - preferences.indexOf(flavour));
             if (preferences.indexOf(flavour) == 0) {
-                this.dissatisfaction -= volume;
+                this.dissatisfaction = Math.max(this.dissatisfaction - volume, 0);
             }
             this.drankFlavour[flavour - 1] = true;
         }
