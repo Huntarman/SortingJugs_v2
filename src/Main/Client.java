@@ -37,12 +37,6 @@ public class Client {
     public int getId() {
         return id;
     }
-    public ArrayList<Integer> getPreferences() {
-        return preferences;
-    }
-    public int getPreference(int num) {
-        return this.preferences.get(num);
-    }
     public int getSatisfaction() {
         return satisfaction;
     }
@@ -97,12 +91,5 @@ public class Client {
             }
             this.drankFlavour[flavour - 1] = true;
         }
-    }
-    public void getdrankFlavour(){
-        String str = "";
-        for (boolean bool : drankFlavour){
-            str += bool + "|";
-        }
-        System.out.println(str);
     }
 }
